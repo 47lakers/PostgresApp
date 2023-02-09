@@ -1,0 +1,181 @@
+﻿@model IEnumerable<SQLApp.Models.ViewModel.MovieViewModel>
+
+@{
+    ViewData["Title"] = "Home Page";
+}
+
+@foreach (var movie in Model)
+{
+    <h1>@movie.Title</h1>
+    <p>@movie.Year</p>
+    <p>@movie.Summary</p>
+    <p>@movie.Actors</p>
+    <button onclick="callModal('@(movie.Title)', '@(movie.Year)', '@(movie.Summary)', '@(movie.Actors)')">Edit Movie</button>
+    <hr />
+}
+
+<!-- Modal -->
+<div class="modal fade" id="editModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLongTitle">Edit Movie</h5>
+            </div>
+            <div class="modal-body">
+                <div>
+                    <div class="form-group">
+                        <label>Title</label>
+                        <input type="text" class="form-control" id="editTitle" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label>Year</label>
+                        <input type="number" class="form-control" id="editYear">
+                    </div>
+                    <div class="form-group">
+                        <label>Summary</label>
+                        <input type="text" class="form-control" id="editSummary">
+                    </div>
+                    <div class="form-group">
+                        <label>Actors</label>
+                        <input type="text" class="form-control" id="editActor1">
+                        <input type="text" class="form-control" id="editActor2">
+                        <input type="text" class="form-control" id="editActor3">
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" id="hideModal">Close</button>
+                <button type="button" class="btn btn-primary" id="saveEdit">Save changes</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<br />
+
+<div>
+    <div class="form-group">
+        <label>Title</label>
+        <input type="text" class="form-control" id="title">
+    </div>
+    <div class="form-group">
+        <label>Year</label>
+        <input type="number" class="form-control" id="year">
+    </div>
+    <div class="form-group">
+        <label>Summary</label>
+        <input type="text" class="form-control" id="summary">
+    </div>
+    <div class="form-group">
+        <label>Actors</label>
+        <input type="text" class="form-control" id="actor1">
+        <input type="text" class="form-control" id="actor2">
+        <input type="text" class="form-control" id="actor3">
+    </div>
+</div>
+
+<br />
+<button id="createButton">Create Movie</button>
+<span>To create the movie, fill in all of the blanks above (actors can be one or more).</span>
+<hr />
+<button id="deleteButton">Delete Movie</button>
+<span>To delete the movie, just type in the title above.</span>
+
+<script>
+
+    function callModal(title, year, summary, actors) {
+        $("#editModal").modal('show');
+        $("#editTitle").val(title);
+        $("#editYear").val(parseInt(year));
+        $("#editSummary").val(summary);
+        var actorsArr = actors.split(',');
+        for (let i = 0; i < actorsArr.length; i++) {
+            var num = i + 1;
+            $("#editActor" + num.toString()).val(actorsArr[i]);
+        }
+
+
+    }
+
+    const element4 = document.getElementById("hideModal");
+    element4.addEventListener("click", function () {
+        $("#editModal").modal('hide');
+    });
+
+    const element = document.getElementById("createButton");
+    element.addEventListener("click", function () {
+        d1 = {
+            title: $('#title').val(), year: $('#year').val(), summary: $('#summary').val(),
+            actor1: $('#actor1').val(), actor2: $('#actor2').val(), actor3: $('#actor3').val()
+        };
+
+        $.ajax({
+            type: "POST",
+            url: '@Url.Action("CreateMovie", "Home")',
+            data: (d1),
+            success: function (result) {
+                  alert("Success.");
+                  location.reload();
+            },
+            error: function (xhr) {
+               alert("Something went wrong.");
+            }
+         });
+    });
+
+    const element2 = document.getElementById("deleteButton");
+    element2.addEventListener("click", function () {
+        d1 = {
+            title: $('#title').val(),
+        };
+
+        $.ajax({
+            type: "POST",
+            url: '@Url.Action("DeleteMovie", "Home")',
+            data: (d1),
+            success: function (result) {
+                if (result.message == null) {
+                    alert("Success.");
+                    location.reload();
+                } else {
+                    alert(result.message);
+                }
+            },
+            error: function (xhr) {
+               alert("Something went wrong.");
+            }
+         });
+    });
+
+    const element3 = document.getElementById("saveEdit");
+    element3.addEventListener("click", function () {
+
+        d1 = {
+            title: $('#editTitle').val(), year: $('#editYear').val(), summary: $('#editSummary').val(),
+            actor1: $('#editActor1').val(), actor2: $('#editActor2').val(), actor3: $('#editActor3').val()
+            @*Try this to add more actors
+            You are going to have to take account of dynamic set up actors*@
+            @*actors: $('#editActor1').val() + $('#editActor2').val() + $('#editActor3').val()*@
+        };
+
+        $.ajax({
+            type: "POST",
+            url: '@Url.Action("EditMovie", "Home")',
+            data: (d1),
+            success: function (result) {
+                if (result.message == null) {
+                    alert("Success.");
+                    location.reload();
+                } else {
+                    alert(result.message);
+                }
+            },
+            error: function (xhr) {
+               alert("Something went wrong.");
+            }
+         });
+
+    });
+
+
+</script>
